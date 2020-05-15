@@ -1,0 +1,158 @@
+{
+  "name": "coc-cfn-lint",
+  "version": "0.1.0",
+  "description": "cfn-lint (https://github.com/aws-cloudformation/cfn-python-lint) extension for coc.nvim",
+  "author": "Joe Nye (prokonye@gmail.com)",
+  "publisher": "Joe Nye (prokonye@gmail.com)",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "keywords": [
+    "coc",
+    "coc.nvim",
+    "cfn-lint",
+    "cfn-python-lint"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joenye/coc-cfn-lint.git"
+  },
+  "engines": {
+    "coc": "^0.0.77"
+  },
+  "bugs": {
+    "url": "https://github.com/joenye/coc-cfn-lint/issues"
+  },
+  "scripts": {
+    "clean": "rimraf lib",
+    "watch": "webpack --watch",
+    "lint": "eslint src --ext ts",
+    "build": "webpack",
+    "prepare": "npm-run-all clean build"
+  },
+  "devDependencies": {
+    "@types/cross-spawn": "^6.0.2",
+    "@types/js-yaml": "^3.12.4",
+    "@types/node": "^14.0.1",
+    "@types/rc": "^1.1.0",
+    "@typescript-eslint/eslint-plugin": "^2.33.0",
+    "@typescript-eslint/parser": "^2.33.0",
+    "coc.nvim": "^0.0.77",
+    "cross-spawn": "7.0.2",
+    "eslint": "^7.0.0",
+    "js-yaml": "^3.13.1",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^3.0.2",
+    "ts-loader": "^7.0.4",
+    "typescript": "^3.9.2",
+    "vscode-languageserver-protocol": "^3.15.3",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
+  },
+  "activationEvents": [
+    "onLanguage:yaml",
+    "onLanguage:json"
+  ],
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "coc-cfn-lint configuration",
+      "properties": {
+        "cfnlint.path": {
+          "description": "Path to cfn-lint",
+          "type": "string",
+          "default": "cfn-lint"
+        },
+        "cfnlint.lintOnOpen": {
+          "description": "Whether to enable linting upon opening a valid CloudFormation JSON/YAML file",
+          "type": "boolean",
+          "default": true
+        },
+        "cfnlint.lintOnSave": {
+          "description": "Whether to enable linting upon saving a valid CloudFormation JSON/YAML file",
+          "type": "boolean",
+          "default": true
+        },
+        "cfnlint.lintOnChange": {
+          "description": "Whether to enable linting upon changing a valid CloudFormation JSON/YAML file",
+          "type": "boolean",
+          "default": true
+        },
+        "cfnlint.detectCfnRegExps": {
+          "description": "Array of RegExp strings. If any of these match against JSON/YAML file contents, then linting will proceed as the file will be determined a CloudFormation file. If provided, these RegExps are tested before any built-in checks, which look for a standard CloudFormation/SAM template",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "cfnlint.ignoreRulesRegExps": {
+          "description": "Array of RegExp strings. Used to filter cfn-lint results (in addition to \"cfnlint.config.ignoreRules\") based on message contents. If a lint message matches one of these rules, that result is ignored",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "cfnlint.config": {
+          "properties": {
+            "awsRegions": {
+              "description": "Array of AWS regions to test against. Defaults to all regions. This is useful because some rules (such as \"E3001\") check whether resources are supported in the given regions",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            },
+            "ignoreBadTemplate": {
+              "description": "Whether to ignore bad template errors",
+              "type": "boolean",
+              "default": false
+            },
+            "ignoreRules": {
+              "description": "Array of rule ID prefixes to ignore (e.g. [\"E3\", \"E1029\"])",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            },
+            "includeRules": {
+              "description": "Array of rule ID prefixes to include. Some checks, such as Informational checks (beginning with \"I\") are disabled by default, and can be enabled by setting this to [\"I\"]",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            },
+            "customRules": {
+              "description": "Array of paths containing additional rules. These can be either directories containing Python file(s), or an import path to a Python module",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            },
+            "includeExperimentalRules": {
+              "description": "Whether to include experimental rules",
+              "type": "boolean",
+              "default": false
+            },
+            "ruleConfigurations": {
+              "description": "Array of rule configurations (e.g. [\"E3012:strict=false\"]",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
+            },
+            "overrideSpecPath": {
+              "description": "Path to a CloudFormation resource specification override file",
+              "type": "string",
+              "default": null
+            }
+          }
+        }
+      }
+    }
+  }
+}

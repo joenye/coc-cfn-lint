@@ -1,0 +1,11 @@
+src
+node_modules
+tsconfig.json
+*.map
+.tags
+.eslintrc.js
+.npmignore
+.DS_Store
+webpack.config.js
+yarn.lock
+yarn-error.log
