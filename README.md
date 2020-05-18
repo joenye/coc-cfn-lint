@@ -2,6 +2,9 @@
 
 Coc ([coc.nvim](https://github.com/neoclide/coc.nvim)) extension for [cfn-python-lint](https://github.com/aws-cloudformation/cfn-python-lint).
 
+[![version](https://img.shields.io/npm/v/coc-cfn-lint)](https://npmjs.org/package/coc-cfn-lint "View this project on npm")
+[![license](https://img.shields.io/npm/l/coc-cfn-lint)](./LICENSE "View this project's LICENSE")
+
 ## Requirements
 
 - [coc.nvim](https://github.com/neoclide/coc.nvim)
