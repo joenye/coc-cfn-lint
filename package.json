@@ -32,6 +32,7 @@
   "devDependencies": {
     "@types/cross-spawn": "^6.0.2",
     "@types/js-yaml": "^3.12.4",
+    "@types/lodash.isequal": "^4.5.5",
     "@types/node": "^14.0.1",
     "@types/rc": "^1.1.0",
     "@typescript-eslint/eslint-plugin": "^2.33.0",
@@ -40,6 +41,7 @@
     "cross-spawn": "7.0.2",
     "eslint": "^7.0.0",
     "js-yaml": "^3.13.1",
+    "lodash.isequal": "^4.5.0",
     "npm-run-all": "^4.1.5",
     "rimraf": "^3.0.2",
     "ts-loader": "^7.0.4",
@@ -63,22 +65,17 @@
           "default": "cfn-lint"
         },
         "cfnlint.lintOnOpen": {
-          "description": "Whether to enable linting upon opening a valid CloudFormation JSON/YAML file",
+          "description": "Enable linting upon opening a valid CloudFormation JSON/YAML file",
           "type": "boolean",
           "default": true
         },
         "cfnlint.lintOnSave": {
-          "description": "Whether to enable linting upon saving a valid CloudFormation JSON/YAML file",
-          "type": "boolean",
-          "default": true
-        },
-        "cfnlint.lintOnChange": {
-          "description": "Whether to enable linting upon changing a valid CloudFormation JSON/YAML file",
+          "description": "Enable linting upon saving a valid CloudFormation JSON/YAML file",
           "type": "boolean",
           "default": true
         },
         "cfnlint.detectCfnRegExps": {
-          "description": "Array of RegExp strings. If any of these match against JSON/YAML file contents, then linting will proceed as the file will be determined a CloudFormation file. If provided, these RegExps are tested before any built-in checks, which look for a standard CloudFormation/SAM template",
+          "description": "Array of RegExp strings. If any of these match in a JSON/YAML file, that file will be linted. This can be useful to detect non-standard CloudFormation/SAM templates, as the built-in checks only look for standard CloudFormation/SAM template",
           "type": "array",
           "items": {
             "type": "string"
@@ -86,7 +83,7 @@
           "default": []
         },
         "cfnlint.ignoreRulesRegExps": {
-          "description": "Array of RegExp strings. Used to filter cfn-lint results (in addition to \"cfnlint.config.ignoreRules\") based on message contents. If a lint message matches one of these rules, that result is ignored",
+          "description": "Array of RegExp strings. If any of these match a cfn-lint result message, then that result is ignored. This can be useful alongside `cfnlint.config.ignoreRules`",
           "type": "array",
           "items": {
             "type": "string"
@@ -96,7 +93,7 @@
         "cfnlint.config": {
           "properties": {
             "awsRegions": {
-              "description": "Array of AWS regions to test against. Defaults to all regions. This is useful because some rules (such as \"E3001\") check whether resources are supported in the given regions",
+              "description": "Array of AWS regions to test against. Defaults to all regions. This is useful because certain rules (such as \"E3001\") check whether resources are supported in the given regions",
               "type": "array",
               "items": {
                 "type": "string"
@@ -104,7 +101,7 @@
               "default": []
             },
             "ignoreBadTemplate": {
-              "description": "Whether to ignore bad template errors",
+              "description": "Ignore bad template errors",
               "type": "boolean",
               "default": false
             },

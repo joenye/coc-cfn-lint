@@ -6,32 +6,15 @@ import {
   workspace,
 } from "coc.nvim";
 import {
-  DidChangeTextDocumentParams,
   TextDocument,
 } from "vscode-languageserver-protocol";
 import { CfnLintEngine } from "./engine";
 
-let documentVersion = 0;
 const engine = new CfnLintEngine();
 const config = workspace.getConfiguration("cfnlint");
 
 function didOpenTextDocument(document: TextDocument) {
   if (config.get<boolean>("lintOnOpen")) {
-    engine.lint(document);
-  }
-}
-
-async function didChangeTextDocument(params: DidChangeTextDocumentParams) {
-  if (!config.get<boolean>("lintOnChange")) {
-    return;
-  }
-
-  if (
-    params.textDocument.version &&
-    documentVersion !== params.textDocument.version
-  ) {
-    documentVersion = params.textDocument.version;
-    const { document } = await workspace.getCurrentState();
     engine.lint(document);
   }
 }
@@ -54,7 +37,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
   context.subscriptions.push(
     workspace.onDidOpenTextDocument(didOpenTextDocument),
-    workspace.onDidChangeTextDocument(didChangeTextDocument),
     workspace.onDidSaveTextDocument(didSaveTextDocument),
     workspace.onDidChangeConfiguration(didChangeConfiguration),
 

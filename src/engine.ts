@@ -1,3 +1,4 @@
+import isEqual from 'lodash.isequal';
 import { languages, Uri, workspace, WorkspaceConfiguration } from "coc.nvim";
 import {
   Diagnostic,
@@ -37,6 +38,7 @@ export class CfnLintEngine {
     this.source
   );
   private projectRootDir = "";
+  private latestDiagnostics: object[] = [];
 
   public async init() {
     // Load project root directory
@@ -81,6 +83,7 @@ export class CfnLintEngine {
         },
         severity: DiagnosticSeverity.Error,
         message: "[cfn-lint] " + msg,
+        source: this.source,
       });
     });
 
@@ -94,7 +97,8 @@ export class CfnLintEngine {
           end: { line: 0, character: Number.MAX_VALUE },
         },
         severity: DiagnosticSeverity.Error,
-        message: "[cfn-lint] Error occurred. See :CocInfo for details"
+        message: "[cfn-lint] Error occurred. See :CocInfo for details",
+        source: this.source,
       });
     });
 
@@ -103,8 +107,8 @@ export class CfnLintEngine {
       stdout += data.toString();
     });
 
-    child.on("exit", (code: number, signal: string) => {
-      this.outputLine(`cfn-lint exited with code ${code} and signal ${signal}`);
+    child.on("exit", (code: number) => {
+      this.outputLine(`cfn-lint exited with code ${code}`);
       if (didError) return;
       let results: CfnLintDiagnostic[] = JSON.parse(stdout);
       const numResults = results.length;
@@ -130,60 +134,93 @@ export class CfnLintEngine {
           },
           severity: this.convertSeverity(result.Level),
           message: `[cfn-lint] ${result.Rule.Id}: ${result.Message}`,
+          source: this.source,
         };
         diagnostics.push(lintErr);
       });
     });
 
     child.on("close", () => {
-      this.diagnosticCollection.set(document.uri, diagnostics);
+      if (!isEqual(this.latestDiagnostics, diagnostics)) {
+        this.outputLine(`Lint results have changed. Refreshing collection`);
+        this.latestDiagnostics = diagnostics;
+        this.diagnosticCollection.set([[document.uri, diagnostics]]);
+      }
     });
   }
 
   private buildCmdArgs(pathToLint: string): string[] {
     const args = ["--format", "json"];
-    const config: { [key: string]: any } = this.getConfig().config;
-    if (config && Object.keys(config).length > 0) {
-      const awsRegions: string[] = config.awsRegions;
-      if (awsRegions && awsRegions.length) {
-        args.push(...["--regions", ...awsRegions]);
-      }
+    const config: WorkspaceConfiguration = this.getConfig();
 
-      const ignoreBadTemplate: boolean = config.ignoreBadTemplate;
-      if (ignoreBadTemplate) {
-        args.push("--ignore-bad-template");
-      }
+    // Maps between user settings and CLI args
+    const settingsMap = [
+      {
+        type: "string[]",
+        from: "regions",
+        to: "--regions",
+      },
+      {
+        type: "boolean",
+        from: "ignoreBadTemplate",
+        to: "--ignore-bad-template",
+      },
+      {
+        type: "string[]",
+        from: "includeRules",
+        to: "--include-checks",
+      },
+      {
+        type: "string[]",
+        from: "ignoreRules",
+        to: "--ignore-checks",
+      },
+      {
+        type: "string[]",
+        from: "customRules",
+        to: "--append-rules",
+      },
+      {
+        type: "boolean",
+        from: "includeExperimentalRules",
+        to: "--include-experimental",
+      },
+      {
+        type: "string[]",
+        from: "ruleConfigurations",
+        to: "--configure-rule",
+      },
+      {
+        type: "string",
+        from: "overrideSpecPath",
+        to: "--override-spec",
+      },
+    ];
 
-      const includeRules: string[] = config.includeRules;
-      if (includeRules && includeRules.length) {
-        args.push(...["--include-checks", ...includeRules]);
+    settingsMap.forEach(setting => {
+      const { from, to, type } = setting;
+      const input = config[from];
+      switch (type) {
+        case 'string[]':
+          if (input && input.length && !input.includes("")) {
+            args.push(...[to, ...input]);
+          }
+          break;
+        case 'string':
+          if (input) {
+            args.push(...[to, input]);
+          }
+          break;
+        case 'boolean':
+          if (input) {
+            args.push(to);
+          }
+          break;
+        default:
+          throw new Error(`Unsupported type "${type}"`);
       }
+    });
 
-      const ignoreRules: string[] = config.ignoreRules;
-      if (ignoreRules && ignoreRules.length) {
-        args.push(...["--ignore-checks", ...ignoreRules]);
-      }
-
-      const customRules: string[] = config.customRules;
-      if (customRules && customRules.length) {
-        args.push(...["--append-rules", ...customRules]);
-      }
-
-      const includeExperimentalRules: boolean = config.includeExperimentalRules;
-      if (includeExperimentalRules) {
-        args.push("--include-experimental");
-      }
-
-      const ruleConfigurations: string[] = config.ruleConfigurations;
-      if (ruleConfigurations && ruleConfigurations.length) {
-        args.push(...["--configure-rule", ...ruleConfigurations]);
-      }
-
-      const overrideSpecPath: string = config.overrideSpecPath;
-      if (overrideSpecPath) {
-        args.push(...["--override-spec", overrideSpecPath]);
-      }
-    }
     args.push(...["--", `"${pathToLint}"`]);
     return args;
   }
