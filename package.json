@@ -1,6 +1,6 @@
 {
   "name": "coc-cfn-lint",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "cfn-lint (https://github.com/aws-cloudformation/cfn-python-lint) extension for coc.nvim",
   "author": "Joe Nye (prokonye@gmail.com)",
   "publisher": "Joe Nye (prokonye@gmail.com)",
