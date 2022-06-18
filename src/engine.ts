@@ -1,11 +1,14 @@
-import isEqual from 'lodash.isequal';
-import { languages, Uri, workspace, WorkspaceConfiguration } from "coc.nvim";
 import {
-  Diagnostic,
-  DiagnosticSeverity,
-  TextDocument,
-} from "vscode-languageserver-protocol";
+  languages,
+  Uri,
+  window,
+  workspace,
+  WorkspaceConfiguration,
+} from "coc.nvim";
 import { spawn } from "cross-spawn";
+import isEqual from "lodash.isequal";
+import { Diagnostic, DiagnosticSeverity } from "vscode-languageserver-protocol";
+import { TextDocument } from "vscode-languageserver-textdocument";
 
 // Results format when "--format json" is supplied
 interface CfnLintDiagnostic {
@@ -33,7 +36,7 @@ interface CfnLintDiagnostic {
 
 export class CfnLintEngine {
   private readonly source = "cfn-lint";
-  private outputChannel = workspace.createOutputChannel(this.source);
+  private outputChannel = window.createOutputChannel(this.source);
   private diagnosticCollection = languages.createDiagnosticCollection(
     this.source
   );
@@ -42,11 +45,7 @@ export class CfnLintEngine {
 
   public async init() {
     // Load project root directory
-    const cocPreferences = workspace.getConfiguration("coc.preferences");
-    this.projectRootDir = await workspace.resolveRootFolder(
-      Uri.parse(workspace.uri),
-      cocPreferences.get("rootPatterns", [])
-    );
+    this.projectRootDir = workspace.root;
     this.outputLine(
       `Using ${this.projectRootDir} as the working directory to execute cfn-lint`
     );
@@ -197,21 +196,21 @@ export class CfnLintEngine {
       },
     ];
 
-    settingsMap.forEach(setting => {
+    settingsMap.forEach((setting) => {
       const { from, to, type } = setting;
       const input = config[from];
       switch (type) {
-        case 'string[]':
+        case "string[]":
           if (input && input.length && !input.includes("")) {
             args.push(...[to, ...input]);
           }
           break;
-        case 'string':
+        case "string":
           if (input) {
             args.push(...[to, input]);
           }
           break;
-        case 'boolean':
+        case "boolean":
           if (input) {
             args.push(to);
           }

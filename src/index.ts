@@ -5,9 +5,7 @@ import {
   ExtensionContext,
   workspace,
 } from "coc.nvim";
-import {
-  TextDocument,
-} from "vscode-languageserver-protocol";
+import { TextDocument } from "vscode-languageserver-textdocument";
 import { CfnLintEngine } from "./engine";
 
 const engine = new CfnLintEngine();
@@ -26,7 +24,7 @@ function didSaveTextDocument(document: TextDocument) {
 }
 
 async function didChangeConfiguration(event: ConfigurationChangeEvent) {
-  if (!event.affectsConfiguration('cfnlint')) return
+  if (!event.affectsConfiguration("cfnlint")) return;
   for (const document of workspace.textDocuments) {
     engine.lint(document);
   }
